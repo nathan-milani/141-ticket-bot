@@ -104,7 +104,7 @@ async function openTicket(guild, user, ticketType, config) {
   }
 
   const ticketId   = generateTicketId();
-  const channelName = `${ticketType}-${user.username.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+  const channelName = `📂・${user.username.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
 
   let channel;
   try {
@@ -235,8 +235,7 @@ async function closeTicket(channel, closedBy, reason, config) {
   if (config.category_closed_id) {
     try {
       await channel.setParent(config.category_closed_id, { lockPermissions: false });
-      const typeEmoji = ticket.ticket_type === 'financeiro' ? '💰' : '📦';
-      await channel.setName(`fechado-${ticket.ticket_type}-${ticket.user_tag.split('#')[0].toLowerCase().replace(/[^a-z0-9]/g, '')}`);
+      await channel.setName(`🔒・${ticket.user_tag.split('#')[0].toLowerCase().replace(/[^a-z0-9]/g, '')}`);
     } catch (err) {
       logger.warn(`Não foi possível mover o canal: ${err.message}`);
     }

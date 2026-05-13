@@ -1,0 +1,23 @@
+{
+  "name": "discord-ticket-bot-premium",
+  "version": "2.0.0",
+  "description": "Sistema premium de tickets para lojas Discord",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "deploy": "node deploy-commands.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.15.0",
+    "dotenv": "^16.4.5",
+    "fs-extra": "^11.2.0",
+    "archiver": "^7.0.1",
+    "discord-html-transcripts": "^3.2.0",
+    "axios": "^1.7.2",
+    "better-sqlite3": "^9.6.0",
+    "node-cron": "^3.0.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

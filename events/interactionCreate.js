@@ -51,15 +51,21 @@ module.exports = {
         return interaction.reply({ embeds: [embeds.error('Aguarde um momento.', config)], ephemeral: true });
       }
 
-      await interaction.deferReply({ ephemeral: true });
       const ticketType = interaction.values[0]; // 'suporte' | 'financeiro'
+
+      // Reset the select menu back to its placeholder immediately.
+      // Without this, Discord keeps the chosen option highlighted and
+      // the user cannot re-select the same category to open a new ticket.
+      await interaction.update({ components: [ticketTypeMenu()] });
+
       const result = await openTicket(interaction.guild, interaction.user, ticketType, config);
 
       if (result.error) {
-        return interaction.editReply({ embeds: [embeds.error(result.error, config)] });
+        return interaction.followUp({ embeds: [embeds.error(result.error, config)], ephemeral: true });
       }
-      return interaction.editReply({
+      return interaction.followUp({
         embeds: [embeds.success(`Ticket aberto: ${result.channel}`, config)],
+        ephemeral: true,
       });
     }
 

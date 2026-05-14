@@ -43,8 +43,9 @@ function generateTicketId() {
 }
 
 // ── Componentes de botão do ticket aberto ────────────────────
+// Linha 1: ações principais
 function ticketButtons(ticketId) {
-  return new ActionRowBuilder().addComponents(
+  const row1 = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId(`ticket_alert_${ticketId}`)
       .setLabel('Alertar Cliente')
@@ -61,6 +62,22 @@ function ticketButtons(ticketId) {
       .setStyle(ButtonStyle.Danger)
       .setEmoji('🔒')
   );
+
+  // Linha 2: gerenciar membros
+  const row2 = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`ticket_adduser_${ticketId}`)
+      .setLabel('Adicionar Pessoa')
+      .setStyle(ButtonStyle.Success)
+      .setEmoji('➕'),
+    new ButtonBuilder()
+      .setCustomId(`ticket_removeuser_${ticketId}`)
+      .setLabel('Remover Pessoa')
+      .setStyle(ButtonStyle.Secondary)
+      .setEmoji('➖')
+  );
+
+  return [row1, row2];
 }
 
 // ── Select menu para tipo de ticket no painel ────────────────
@@ -106,12 +123,17 @@ async function openTicket(guild, user, ticketType, config) {
   const ticketId   = generateTicketId();
   const channelName = `📂・${user.username.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
 
+  // Alteração 4: usa categoria específica por tipo de ticket
+  const categoryId = ticketType === 'financeiro'
+    ? (config.category_financeiro_id || config.category_open_id || null)
+    : (config.category_suporte_id    || config.category_open_id || null);
+
   let channel;
   try {
     channel = await guild.channels.create({
       name: channelName,
       type: ChannelType.GuildText,
-      parent: config.category_open_id || null,
+      parent: categoryId,
       topic: `${ticketId} | ${user.tag} | ${ticketType}`,
       permissionOverwrites: perms.ticketPermissions(guild, user.id, config.staff_role_id),
     });
@@ -135,7 +157,7 @@ async function openTicket(guild, user, ticketType, config) {
   await channel.send({
     content: `${user} ${staffMention}`,
     embeds:  [embeds.ticketOpened(user, ticketType, ticketId, config.staff_role_id, config)],
-    components: [ticketButtons(ticketId)],
+    components: ticketButtons(ticketId),
   });
 
   logger.ticket(`Aberto [${ticketId}] tipo=${ticketType} usuário=${user.tag} canal=#${channelName}`);
@@ -231,20 +253,15 @@ async function closeTicket(channel, closedBy, reason, config) {
     purge_at:        purgeAt,
   });
 
-  // ── Mover para categoria de fechados OU deletar ────────────
-  if (config.category_closed_id) {
+  // ── Deletar canal após 8 segundos ──────────────────────────
+  setTimeout(async () => {
     try {
-      await channel.setParent(config.category_closed_id, { lockPermissions: false });
-      await channel.setName(`🔒・${ticket.user_tag.split('#')[0].toLowerCase().replace(/[^a-z0-9]/g, '')}`);
+      await channel.delete('Ticket encerrado');
+      logger.ticket(`Canal deletado [${ticket.ticket_id}]`);
     } catch (err) {
-      logger.warn(`Não foi possível mover o canal: ${err.message}`);
+      logger.warn(`Não foi possível deletar o canal ${channel.id}: ${err.message}`);
     }
-  } else {
-    // Sem categoria de fechados: aguarda 5s e deleta
-    setTimeout(async () => {
-      try { await channel.delete('Ticket fechado'); } catch {}
-    }, 5000);
-  }
+  }, 8000);
 
   logger.ticket(`Fechado [${ticket.ticket_id}] por=${closedBy.tag} motivo="${reason}"`);
   return { success: true };

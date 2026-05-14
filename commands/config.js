@@ -40,15 +40,15 @@ function buildConfigMenu() {
           .setValue('staff_role')
           .setEmoji('👥'),
         new StringSelectMenuOptionBuilder()
-          .setLabel('Categoria — Tickets Abertos')
-          .setDescription('Categoria onde os tickets abertos são criados.')
-          .setValue('cat_open')
-          .setEmoji('📂'),
+          .setLabel('Categoria — Suporte')
+          .setDescription('Categoria onde os tickets de Suporte são criados.')
+          .setValue('cat_suporte')
+          .setEmoji('📦'),
         new StringSelectMenuOptionBuilder()
-          .setLabel('Categoria — Tickets Fechados')
-          .setDescription('Categoria para onde os tickets vão ao fechar.')
-          .setValue('cat_closed')
-          .setEmoji('🗄️'),
+          .setLabel('Categoria — Financeiro')
+          .setDescription('Categoria onde os tickets Financeiros são criados.')
+          .setValue('cat_financeiro')
+          .setEmoji('💰'),
         new StringSelectMenuOptionBuilder()
           .setLabel('Canal de Logs')
           .setDescription('Canal onde os logs de tickets são enviados.')
@@ -83,16 +83,16 @@ const CONFIG_MODALS = {
       { id: 'staff_role_id', label: 'ID do Cargo de Staff', placeholder: 'Cole aqui o ID do cargo (clique com botão direito → Copiar ID)', style: TextInputStyle.Short, max: 30 },
     ],
   },
-  cat_open: {
-    title: '📂 Categoria — Tickets Abertos',
+  cat_suporte: {
+    title: '📦 Categoria — Suporte',
     fields: [
-      { id: 'category_open_id', label: 'ID da Categoria', placeholder: 'ID da categoria de tickets abertos', style: TextInputStyle.Short, max: 30 },
+      { id: 'category_suporte_id', label: 'ID da Categoria de Suporte', placeholder: 'ID da categoria onde tickets de suporte são criados', style: TextInputStyle.Short, max: 30 },
     ],
   },
-  cat_closed: {
-    title: '🗄️ Categoria — Tickets Fechados',
+  cat_financeiro: {
+    title: '💰 Categoria — Financeiro',
     fields: [
-      { id: 'category_closed_id', label: 'ID da Categoria', placeholder: 'ID da categoria de tickets fechados', style: TextInputStyle.Short, max: 30 },
+      { id: 'category_financeiro_id', label: 'ID da Categoria Financeira', placeholder: 'ID da categoria onde tickets financeiros são criados', style: TextInputStyle.Short, max: 30 },
     ],
   },
   log_channel: {

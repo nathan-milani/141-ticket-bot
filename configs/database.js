@@ -21,17 +21,21 @@ db.pragma('foreign_keys = ON');
 // ── Criação das tabelas ──────────────────────────────────────
 db.exec(`
   CREATE TABLE IF NOT EXISTS guild_config (
-    guild_id          TEXT PRIMARY KEY,
-    store_name        TEXT DEFAULT 'Minha Loja',
-    system_name       TEXT DEFAULT 'Sistema de Tickets',
-    footer_text       TEXT DEFAULT 'Sistema de Tickets Premium',
-    staff_role_id     TEXT,
-    category_open_id  TEXT,
-    category_closed_id TEXT,
-    log_channel_id    TEXT,
-    panel_channel_id  TEXT,
-    updated_at        INTEGER DEFAULT (strftime('%s','now'))
+    guild_id              TEXT PRIMARY KEY,
+    store_name            TEXT DEFAULT 'Minha Loja',
+    system_name           TEXT DEFAULT 'Sistema de Tickets',
+    footer_text           TEXT DEFAULT 'Sistema de Tickets Premium',
+    staff_role_id         TEXT,
+    category_open_id      TEXT,
+    category_closed_id    TEXT,
+    category_suporte_id   TEXT,
+    category_financeiro_id TEXT,
+    log_channel_id        TEXT,
+    panel_channel_id      TEXT,
+    updated_at            INTEGER DEFAULT (strftime('%s','now'))
   );
+
+  -- Migrações para banco já existente (ignora se coluna já existe)
 
   CREATE TABLE IF NOT EXISTS tickets (
     ticket_id         TEXT PRIMARY KEY,
@@ -68,6 +72,15 @@ db.exec(`
     created_at  INTEGER DEFAULT (strftime('%s','now'))
   );
 `);
+
+// ── Migrações (bancos já existentes) ────────────────────────
+const migrations = [
+  `ALTER TABLE guild_config ADD COLUMN category_suporte_id TEXT`,
+  `ALTER TABLE guild_config ADD COLUMN category_financeiro_id TEXT`,
+];
+for (const sql of migrations) {
+  try { db.exec(sql); } catch { /* coluna já existe */ }
+}
 
 // ── Guild Config ─────────────────────────────────────────────
 

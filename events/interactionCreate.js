@@ -7,6 +7,7 @@
 const { Events, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
 const logger  = require('../utils/logger');
 const embeds  = require('../utils/embeds');
+const perms   = require('../utils/permissions');
 const { getConfig } = require('../configs/database');
 const { openTicket, closeTicket, ticketTypeMenu } = require('../handlers/ticketHandler');
 const db      = require('../configs/database');
@@ -134,6 +135,106 @@ module.exports = {
           embeds: [embeds.info(`${interaction.user} assumiu este ticket.`, config)],
         });
       }
+
+      // ➕ Adicionar pessoa ao ticket
+      if (id.startsWith('ticket_adduser_')) {
+        if (!perms.isStaff(interaction.member)) {
+          return interaction.reply({ embeds: [embeds.error('Apenas staff pode adicionar pessoas.', config)], ephemeral: true });
+        }
+
+        const modal = new ModalBuilder()
+          .setCustomId(`modal_adduser_${id.replace('ticket_adduser_', '')}`)
+          .setTitle('➕ Adicionar Pessoa ao Ticket');
+
+        modal.addComponents(
+          new ActionRowBuilder().addComponents(
+            new TextInputBuilder()
+              .setCustomId('add_user_id')
+              .setLabel('ID do Usuário')
+              .setStyle(TextInputStyle.Short)
+              .setRequired(true)
+              .setPlaceholder('Cole aqui o ID do Discord do usuário')
+              .setMaxLength(25)
+          )
+        );
+        return interaction.showModal(modal);
+      }
+
+      // ➖ Remover pessoa do ticket
+      if (id.startsWith('ticket_removeuser_')) {
+        if (!perms.isStaff(interaction.member)) {
+          return interaction.reply({ embeds: [embeds.error('Apenas staff pode remover pessoas.', config)], ephemeral: true });
+        }
+
+        const modal = new ModalBuilder()
+          .setCustomId(`modal_removeuser_${id.replace('ticket_removeuser_', '')}`)
+          .setTitle('➖ Remover Pessoa do Ticket');
+
+        modal.addComponents(
+          new ActionRowBuilder().addComponents(
+            new TextInputBuilder()
+              .setCustomId('remove_user_id')
+              .setLabel('ID do Usuário')
+              .setStyle(TextInputStyle.Short)
+              .setRequired(true)
+              .setPlaceholder('Cole aqui o ID do Discord do usuário')
+              .setMaxLength(25)
+          )
+        );
+        return interaction.showModal(modal);
+      }
+    }
+
+    // ── Modal — adicionar pessoa ────────────────────────────────
+    if (interaction.isModalSubmit() && interaction.customId.startsWith('modal_adduser_')) {
+      await interaction.deferReply({ ephemeral: true });
+      const userId = interaction.fields.getTextInputValue('add_user_id').trim();
+      let member;
+      try {
+        member = await interaction.guild.members.fetch(userId);
+      } catch {
+        return interaction.editReply({ embeds: [embeds.error(`Usuário com ID \`${userId}\` não encontrado neste servidor.`, config)] });
+      }
+
+      // Impede adicionar bots
+      if (member.user.bot) {
+        return interaction.editReply({ embeds: [embeds.error('Não é possível adicionar bots ao ticket.', config)] });
+      }
+
+      await interaction.channel.permissionOverwrites.edit(member.id, {
+        ViewChannel: true, SendMessages: true, AttachFiles: true,
+        EmbedLinks: true, ReadMessageHistory: true,
+      });
+
+      return interaction.editReply({
+        embeds: [embeds.success(`${member} foi **adicionado** ao ticket.`, config)],
+      });
+    }
+
+    // ── Modal — remover pessoa ────────────────────────────────
+    if (interaction.isModalSubmit() && interaction.customId.startsWith('modal_removeuser_')) {
+      await interaction.deferReply({ ephemeral: true });
+      const userId = interaction.fields.getTextInputValue('remove_user_id').trim();
+
+      const ticket = db.getTicketByChannel(interaction.channel.id);
+      if (ticket && userId === ticket.user_id) {
+        return interaction.editReply({ embeds: [embeds.error('Não é possível remover o criador do ticket.', config)] });
+      }
+
+      let member;
+      try {
+        member = await interaction.guild.members.fetch(userId);
+      } catch {
+        return interaction.editReply({ embeds: [embeds.error(`Usuário com ID \`${userId}\` não encontrado.`, config)] });
+      }
+
+      await interaction.channel.permissionOverwrites.edit(member.id, {
+        ViewChannel: false, SendMessages: false,
+      });
+
+      return interaction.editReply({
+        embeds: [embeds.success(`${member} foi **removido** do ticket.`, config)],
+      });
     }
 
     // ── Modal — fechar com motivo ────────────────────────────────

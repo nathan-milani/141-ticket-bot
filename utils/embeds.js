@@ -7,13 +7,13 @@ const { EmbedBuilder } = require('discord.js');
 
 // Paleta de cores do sistema
 const COLORS = {
-  primary:  0x5865F2, // Blurple Discord
-  success:  0x2ECC71, // Verde
-  warning:  0xF39C12, // Amarelo/Laranja
-  danger:   0xE74C3C, // Vermelho
-  info:     0x3498DB, // Azul
-  neutral:  0x2C2F33, // Cinza escuro
-  gold:     0xF1C40F, // Dourado
+  primary:  0x000000,
+  success:  0x000000,
+  warning:  0x000000,
+  danger:   0x000000,
+  info:     0x000000,
+  neutral:  0x000000,
+  gold:     0x000000,
 };
 
 /**
@@ -129,11 +129,11 @@ function dmAlert(guildName, channelName, config) {
 // ── Anúncio ──────────────────────────────────────────────────
 
 function announcement(author, title, description, imageUrl, config) {
+  // Alteração 5: sem autor/avatar — embed limpa e minimalista
   const embed = base(config)
-    .setColor(COLORS.gold)
+    .setColor(COLORS.primary)
     .setTitle(`📢  ${title}`)
-    .setDescription(description)
-    .setAuthor({ name: author.tag, iconURL: author.displayAvatarURL({ dynamic: true }) });
+    .setDescription(description);
 
   if (imageUrl) embed.setImage(imageUrl);
   return embed;
@@ -143,14 +143,16 @@ function announcement(author, title, description, imageUrl, config) {
 
 function configMenu(config) {
   return base(config)
-    .setColor(COLORS.info)
+    .setColor(COLORS.primary)
     .setTitle('⚙️  Painel de Configuração')
     .setDescription('Configure o sistema de tickets para este servidor.\nSelecione uma categoria abaixo para editar.')
     .addFields(
-      { name: '🏪  Loja',           value: `Nome: \`${config.store_name || 'Não definido'}\`\nSistema: \`${config.system_name || 'Não definido'}\``, inline: true },
-      { name: '👥  Staff',          value: config.staff_role_id     ? `<@&${config.staff_role_id}>` : '`Não definido`',    inline: true },
-      { name: '📂  Categorias',     value: `Aberto: ${config.category_open_id   ? `\`${config.category_open_id}\`` : '`Não definido`'}\nFechado: ${config.category_closed_id ? `\`${config.category_closed_id}\`` : '`Não definido`'}`, inline: false },
-      { name: '📋  Canais',         value: `Logs: ${config.log_channel_id   ? `<#${config.log_channel_id}>`   : '`Não definido`'}\nPainel: ${config.panel_channel_id ? `<#${config.panel_channel_id}>` : '`Não definido`'}`, inline: false },
+      { name: '🏪  Loja',                value: `Nome: \`${config.store_name || 'Não definido'}\`\nSistema: \`${config.system_name || 'Não definido'}\``, inline: true },
+      { name: '👥  Staff',               value: config.staff_role_id ? `<@&${config.staff_role_id}>` : '`Não definido`', inline: true },
+      { name: '📂  Categoria Suporte',   value: config.category_suporte_id    ? `\`${config.category_suporte_id}\``    : '`Não definido`', inline: true },
+      { name: '💰  Categoria Financeiro', value: config.category_financeiro_id ? `\`${config.category_financeiro_id}\`` : '`Não definido`', inline: true },
+      { name: '📋  Canal de Logs',       value: config.log_channel_id   ? `<#${config.log_channel_id}>`   : '`Não definido`', inline: true },
+      { name: '🎫  Canal do Painel',     value: config.panel_channel_id ? `<#${config.panel_channel_id}>` : '`Não definido`', inline: true },
     );
 }
 
